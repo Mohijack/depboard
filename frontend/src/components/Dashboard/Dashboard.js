@@ -252,6 +252,7 @@ function Dashboard({ user }) {
   return (
     <LoadingOverlay
       isLoading={loading}
+      showOnlyForUserActions={true}
       message={getLoadingMessage()}
     >
       <div className="dashboard">

@@ -8,6 +8,7 @@ class StateManager {
       services: [],
       lastUpdate: null,
       isLoading: false,
+      isBackgroundLoading: false, // Neue Eigenschaft für Hintergrund-Aktualisierungen
       loadingAction: null,
       loadingServiceId: null,
       error: null,
@@ -36,14 +37,24 @@ class StateManager {
   }
 
   // Services abrufen
-  async fetchServices(isAdmin = false) {
+  async fetchServices(isAdmin = false, isBackground = false) {
     try {
-      this.updateState({
-        isLoading: true,
-        loadingAction: 'fetch',
-        loadingServiceId: null,
-        error: null
-      });
+      // Wenn es ein Hintergrund-Refresh ist, setzen wir isBackgroundLoading statt isLoading
+      if (isBackground) {
+        this.updateState({
+          isBackgroundLoading: true,
+          loadingAction: 'fetch',
+          loadingServiceId: null,
+          error: null
+        });
+      } else {
+        this.updateState({
+          isLoading: true,
+          loadingAction: 'fetch',
+          loadingServiceId: null,
+          error: null
+        });
+      }
       const token = localStorage.getItem('token');
 
       if (!token) {
@@ -91,6 +102,7 @@ class StateManager {
         this.updateState({
           services: newServices || [],
           isLoading: false,
+          isBackgroundLoading: false,
           loadingAction: null,
           loadingServiceId: null
         });
@@ -98,6 +110,7 @@ class StateManager {
         // Wenn keine Änderungen, aktualisiere nur den Loading-Status
         this.updateState({
           isLoading: false,
+          isBackgroundLoading: false,
           loadingAction: null,
           loadingServiceId: null
         });
@@ -116,6 +129,7 @@ class StateManager {
       this.updateState({
         error: error.message,
         isLoading: false,
+        isBackgroundLoading: false,
         loadingAction: null,
         loadingServiceId: null
       });
@@ -236,9 +250,9 @@ class StateManager {
     // Speichere die aktuelle Konfiguration
     this.pollingConfig = { interval, isAdmin };
 
-    // Starte neues Polling
+    // Starte neues Polling mit isBackground=true
     this.pollingInterval = setInterval(() => {
-      this.fetchServices(isAdmin);
+      this.fetchServices(isAdmin, true); // true für isBackground
 
       // Überprüfe Services im "deploying"-Status und erhöhe die Polling-Frequenz
       this.checkDeployingServices(isAdmin);
@@ -266,9 +280,9 @@ class StateManager {
         clearInterval(this.pollingInterval);
       }
 
-      // Starte ein schnelleres Polling (alle 2 Sekunden)
+      // Starte ein schnelleres Polling (alle 2 Sekunden) mit isBackground=true
       this.pollingInterval = setInterval(() => {
-        this.fetchServices(isAdmin);
+        this.fetchServices(isAdmin, true); // true für isBackground
 
         // Überprüfe, ob noch Services im "deploying"-Status sind
         const stillDeploying = this.state.services.some(service =>
@@ -296,4 +310,8 @@ class StateManager {
 
 // Singleton-Instanz
 const stateManager = new StateManager();
+
+// Mache den StateManager global verfügbar für die LoadingOverlay-Komponente
+window.stateManager = stateManager;
+
 export default stateManager;

@@ -117,6 +117,7 @@ function AdminDashboard() {
   return (
     <LoadingOverlay
       isLoading={loading}
+      showOnlyForUserActions={true}
       message={getLoadingMessage()}
     >
       <div className="admin-dashboard">

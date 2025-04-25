@@ -266,19 +266,6 @@ function BookingList({ bookings: initialBookings, onDeploy, onSuspend, onResume,
               >
                 Details
               </button>
-
-              {/* Löschen-Button für alle Status */}
-              <button
-                className="btn-action btn-delete"
-                onClick={() => {
-                  if (window.confirm('Sind Sie sicher, dass Sie diesen Dienst löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.')) {
-                    handleAction('delete', booking.id);
-                  }
-                }}
-                disabled={loading && actionBookingId === booking.id}
-              >
-                {loading && actionBookingId === booking.id && currentAction === 'delete' ? 'Wird gelöscht...' : 'Löschen'}
-              </button>
             </div>
           </div>
         ))}
