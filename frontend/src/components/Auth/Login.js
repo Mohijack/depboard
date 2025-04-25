@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../../styles/auth.css';
 
 function Login({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -57,6 +58,7 @@ function Login({ onLogin }) {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="Ihre E-Mail-Adresse"
               required
             />
           </div>
@@ -67,6 +69,7 @@ function Login({ onLogin }) {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Ihr Passwort"
               required
             />
           </div>

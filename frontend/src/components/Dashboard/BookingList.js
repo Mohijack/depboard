@@ -158,7 +158,7 @@ function BookingList({ bookings, onDeploy, onSuspend, onResume, onDelete }) {
                   title="Logs anzeigen"
                   aria-label="Logs anzeigen"
                 >
-                  <i className="logs-icon">🔍</i>
+                  <i className="logs-icon">📄</i>
                 </button>
               )}
             </div>

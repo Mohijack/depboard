@@ -247,10 +247,38 @@
   color: #c62828;
 }
 
+/* Dark mode status badges */
+[data-theme="dark"] .status-active {
+  background-color: rgba(46, 125, 50, 0.2);
+  color: #81c784;
+}
+
+[data-theme="dark"] .status-pending {
+  background-color: rgba(245, 127, 23, 0.2);
+  color: #ffb74d;
+}
+
+[data-theme="dark"] .status-deploying {
+  background-color: rgba(21, 101, 192, 0.2);
+  color: #64b5f6;
+}
+
+[data-theme="dark"] .status-suspended {
+  background-color: rgba(97, 97, 97, 0.2);
+  color: #bdbdbd;
+}
+
+[data-theme="dark"] .status-failed {
+  background-color: rgba(198, 40, 40, 0.2);
+  color: #e57373;
+}
+
 .status-cell {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-direction: row;
+  flex-wrap: nowrap;
 }
 
 .status-action-button {
@@ -262,19 +290,25 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  margin-left: 4px;
 }
 
 .status-action-button:hover {
   background-color: rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
 }
 
-html[data-theme='dark'] .status-action-button:hover {
+[data-theme='dark'] .status-action-button:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
 .logs-button {
-  color: #c62828;
+  color: #0070f3;
+}
+
+[data-theme='dark'] .logs-button {
+  color: #3291ff;
 }
 
 .logs-icon {
