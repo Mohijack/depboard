@@ -146,6 +146,7 @@ function AdminDashboard() {
         <ServiceLogs
           serviceId={selectedService.id}
           serviceName={selectedService.customName}
+          serviceStatus={selectedService.status}
           onClose={() => setShowLogs(false)}
         />
       ) : selectedService ? (

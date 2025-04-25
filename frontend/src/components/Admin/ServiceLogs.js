@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './ServiceLogs.css';
 
-function ServiceLogs({ serviceId, serviceName, onClose }) {
+function ServiceLogs({ serviceId, serviceName, serviceStatus, onClose }) {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -138,7 +138,7 @@ function ServiceLogs({ serviceId, serviceName, onClose }) {
       ];
 
       // Add Docker deployment error logs if service status is 'failed'
-      if (serviceInfo && serviceInfo.status === 'failed') {
+      if ((serviceInfo && serviceInfo.status === 'failed') || serviceStatus === 'failed') {
         systemLogs.push(
           { timestamp: '2023-04-24T11:02:35.123Z', message: '[docker-compose] Error creating container: port is already allocated', level: 'ERROR' },
           { timestamp: '2023-04-24T11:02:40.456Z', message: '[direct] Deployment failed: could not start container', level: 'ERROR' },
