@@ -247,18 +247,41 @@
   color: #c62828;
 }
 
-.logs-icon {
-  margin-left: 8px;
+.status-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-action-button {
+  background: none;
+  border: none;
   cursor: pointer;
-  font-size: 14px;
+  padding: 4px;
+  border-radius: 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s;
+  transition: background-color 0.2s;
 }
 
-.logs-icon:hover {
-  transform: scale(1.2);
+.status-action-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+html[data-theme='dark'] .status-action-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.logs-button {
+  color: #c62828;
+}
+
+.logs-icon {
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-action {

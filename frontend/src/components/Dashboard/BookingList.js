@@ -143,25 +143,24 @@ function BookingList({ bookings, onDeploy, onSuspend, onResume, onDelete }) {
                 </a>
               )}
             </div>
-            <div className="booking-cell">
+            <div className="booking-cell status-cell">
               <span className={`status-badge ${getStatusClass(booking.status)}`}>
                 {booking.status === 'active' && 'Aktiv'}
                 {booking.status === 'pending' && 'Ausstehend'}
                 {booking.status === 'deploying' && 'Wird bereitgestellt'}
                 {booking.status === 'suspended' && 'Pausiert'}
-                {booking.status === 'failed' && (
-                  <>
-                    Fehlgeschlagen
-                    <span
-                      className="logs-icon"
-                      onClick={() => handleShowLogs(booking.id)}
-                      title="Logs anzeigen"
-                    >
-                      📋
-                    </span>
-                  </>
-                )}
+                {booking.status === 'failed' && 'Fehlgeschlagen'}
               </span>
+              {(booking.status === 'active' || booking.status === 'failed' || booking.status === 'suspended') && (
+                <button
+                  className="status-action-button logs-button"
+                  onClick={() => handleShowLogs(booking.id)}
+                  title="Logs anzeigen"
+                  aria-label="Logs anzeigen"
+                >
+                  <i className="logs-icon">🔍</i>
+                </button>
+              )}
             </div>
             <div className="booking-cell">
               {booking.status === 'pending' && (
@@ -198,16 +197,6 @@ function BookingList({ bookings, onDeploy, onSuspend, onResume, onDelete }) {
                   disabled={loading && actionBookingId === booking.id}
                 >
                   {loading && actionBookingId === booking.id ? 'Wird wiederholt...' : 'Wiederholen'}
-                </button>
-              )}
-
-              {/* Logs-Button für aktive, fehlgeschlagene oder pausierte Dienste */}
-              {(booking.status === 'active' || booking.status === 'failed' || booking.status === 'suspended') && (
-                <button
-                  className="btn-action btn-logs"
-                  onClick={() => handleShowLogs(booking.id)}
-                >
-                  Logs
                 </button>
               )}
 
