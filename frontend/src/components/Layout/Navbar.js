@@ -25,9 +25,8 @@ function Navbar({ user, onLogout }) {
         </Link>
 
         <div className="navbar-menu">
-          <a href="/" className="navbar-item">Home</a>
-          <a href="/#features" className="navbar-item">Vorteile</a>
-          <a href="/#services" className="navbar-item">Dienste</a>
+          <a href="/" className="navbar-item">Deployment</a>
+          <a href="/booking" className="navbar-item">Dienste bereitstellen</a>
 
           {user ? (
             <>

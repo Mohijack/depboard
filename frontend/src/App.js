@@ -5,7 +5,7 @@ import './styles/bosch-theme.css';
 // Components
 import Navbar from './components/Layout/Navbar';
 import Footer from './components/Layout/Footer';
-import Home from './components/Home/Home';
+import DeploymentLanding from './components/Deployment/DeploymentLanding';
 import Login from './components/Auth/Login';
 import StepLogin from './components/Auth/StepLogin';
 import Register from './components/Auth/Register';
@@ -48,7 +48,7 @@ function App() {
 
         <main className="main-content">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<DeploymentLanding />} />
             <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login onLogin={handleLogin} />} />
             <Route path="/login-step" element={user ? <Navigate to="/booking?step=2" /> : <StepLogin onLogin={handleLogin} />} />
             <Route
