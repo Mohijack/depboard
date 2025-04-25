@@ -1,0 +1,82 @@
+:root {
+  /* Light Mode (Default) */
+  --background: #f8f9fa;
+  --background-dark: #e9ecef;
+  --foreground: #111111;
+  --card-bg: #ffffff;
+  --card-bg-secondary: #f5f7fa;
+  --card-bg-tertiary: #edf2f7;
+  --text: #333333;
+  --text-light: #666666;
+  --border: #eaeaea;
+  --border-dark: #d1d1d1;
+  --shadow: rgba(0, 0, 0, 0.1);
+
+  /* Primary Colors */
+  --primary: #0070f3;
+  --primary-dark: #0050b3;
+  --primary-light: #3291ff;
+  --primary-glow: rgba(0, 112, 243, 0.35);
+
+  /* Secondary Colors */
+  --secondary: #7928ca;
+  --secondary-dark: #5c1e9e;
+  --secondary-light: #8a3df0;
+
+  /* Accent Colors */
+  --accent: #ff0080;
+  --accent-dark: #c70063;
+  --accent-light: #ff4d9c;
+
+  /* Status Colors */
+  --success: #0070f3;
+  --error: #ff0080;
+  --warning: #f5a623;
+  --info: #0070f3;
+
+  /* Gradients */
+  --gradient-1: linear-gradient(to right, var(--primary), var(--secondary));
+  --gradient-2: linear-gradient(to right, var(--secondary), var(--accent));
+  --gradient-3: linear-gradient(to right, var(--accent), var(--primary));
+
+  /* Effects */
+  --blur-radius: 10px;
+  --glow-radius: 20px;
+}
+
+/* Dark Mode */
+[data-theme="dark"] {
+  --background: #121212;
+  --background-dark: #0a0a0a;
+  --foreground: #f8f9fa;
+  --card-bg: #1e1e1e;
+  --card-bg-secondary: #252525;
+  --card-bg-tertiary: #2d2d2d;
+  --text: #e0e0e0;
+  --text-light: #a0a0a0;
+  --border: #333333;
+  --border-dark: #444444;
+  --shadow: rgba(0, 0, 0, 0.3);
+
+  /* Primary Colors - slightly adjusted for dark mode */
+  --primary: #3291ff;
+  --primary-dark: #0070f3;
+  --primary-light: #5dabff;
+  --primary-glow: rgba(50, 145, 255, 0.35);
+
+  /* Secondary Colors - slightly adjusted for dark mode */
+  --secondary: #8a3df0;
+  --secondary-dark: #7928ca;
+  --secondary-light: #a665ff;
+
+  /* Accent Colors - slightly adjusted for dark mode */
+  --accent: #ff4d9c;
+  --accent-dark: #ff0080;
+  --accent-light: #ff80b3;
+
+  /* Status Colors - slightly adjusted for dark mode */
+  --success: #3291ff;
+  --error: #ff4d9c;
+  --warning: #f7b955;
+  --info: #3291ff;
+}
