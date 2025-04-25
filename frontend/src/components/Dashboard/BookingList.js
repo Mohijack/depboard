@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ServiceLogs from './ServiceLogs';
+import ServiceDetails from './ServiceDetails';
 
 function BookingList({ bookings, onDeploy, onSuspend, onResume, onDelete }) {
   const [loading, setLoading] = useState(false);
@@ -9,6 +10,7 @@ function BookingList({ bookings, onDeploy, onSuspend, onResume, onDelete }) {
   const [currentAction, setCurrentAction] = useState(null);
   const [showLogs, setShowLogs] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState(null);
+  const [selectedBooking, setSelectedBooking] = useState(null);
 
   const handleShowLogs = (bookingId) => {
     setSelectedBookingId(bookingId);
@@ -18,6 +20,14 @@ function BookingList({ bookings, onDeploy, onSuspend, onResume, onDelete }) {
   const handleCloseLogs = () => {
     setShowLogs(false);
     setSelectedBookingId(null);
+  };
+
+  const handleViewDetails = (booking) => {
+    setSelectedBooking(booking);
+  };
+
+  const handleCloseDetails = () => {
+    setSelectedBooking(null);
   };
 
   const handleAction = async (action, bookingId) => {
@@ -104,6 +114,18 @@ function BookingList({ bookings, onDeploy, onSuspend, onResume, onDelete }) {
         />
       )}
 
+      {/* Service Details Modal */}
+      {selectedBooking && (
+        <ServiceDetails
+          booking={selectedBooking}
+          onClose={handleCloseDetails}
+          onDeploy={onDeploy}
+          onSuspend={onSuspend}
+          onResume={onResume}
+          onDelete={onDelete}
+        />
+      )}
+
       <div className="booking-table">
         <div className="booking-header">
           <div className="booking-cell">Dienst</div>
@@ -143,7 +165,7 @@ function BookingList({ bookings, onDeploy, onSuspend, onResume, onDelete }) {
                 </a>
               )}
             </div>
-            <div className="booking-cell status-cell">
+            <div className="booking-cell">
               <span className={`status-badge ${getStatusClass(booking.status)}`}>
                 {booking.status === 'active' && 'Aktiv'}
                 {booking.status === 'pending' && 'Ausstehend'}
@@ -151,16 +173,6 @@ function BookingList({ bookings, onDeploy, onSuspend, onResume, onDelete }) {
                 {booking.status === 'suspended' && 'Pausiert'}
                 {booking.status === 'failed' && 'Fehlgeschlagen'}
               </span>
-              {(booking.status === 'active' || booking.status === 'failed' || booking.status === 'suspended') && (
-                <button
-                  className="status-action-button logs-button"
-                  onClick={() => handleShowLogs(booking.id)}
-                  title="Logs anzeigen"
-                  aria-label="Logs anzeigen"
-                >
-                  <i className="logs-icon">📄</i>
-                </button>
-              )}
             </div>
             <div className="booking-cell">
               {booking.status === 'pending' && (
@@ -199,6 +211,15 @@ function BookingList({ bookings, onDeploy, onSuspend, onResume, onDelete }) {
                   {loading && actionBookingId === booking.id ? 'Wird wiederholt...' : 'Wiederholen'}
                 </button>
               )}
+
+              {/* Details-Button für alle Status */}
+              <button
+                className="btn-action btn-details"
+                onClick={() => handleViewDetails(booking)}
+                disabled={loading && actionBookingId === booking.id}
+              >
+                Details
+              </button>
 
               {/* Löschen-Button für alle Status */}
               <button
