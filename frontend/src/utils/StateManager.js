@@ -8,7 +8,10 @@ class StateManager {
       services: [],
       lastUpdate: null,
       isLoading: false,
+      loadingAction: null,
+      loadingServiceId: null,
       error: null,
+      actionSuccess: null,
     };
     this.observers = [];
   }
@@ -35,7 +38,12 @@ class StateManager {
   // Services abrufen
   async fetchServices(isAdmin = false) {
     try {
-      this.updateState({ isLoading: true, error: null });
+      this.updateState({
+        isLoading: true,
+        loadingAction: 'fetch',
+        loadingServiceId: null,
+        error: null
+      });
       const token = localStorage.getItem('token');
 
       if (!token) {
@@ -82,11 +90,17 @@ class StateManager {
         console.log('Services have changed, updating state');
         this.updateState({
           services: newServices || [],
-          isLoading: false
+          isLoading: false,
+          loadingAction: null,
+          loadingServiceId: null
         });
       } else {
         // Wenn keine Änderungen, aktualisiere nur den Loading-Status
-        this.updateState({ isLoading: false });
+        this.updateState({
+          isLoading: false,
+          loadingAction: null,
+          loadingServiceId: null
+        });
       }
 
       // Überprüfe, ob es Services im "deploying"-Status gibt
@@ -101,7 +115,9 @@ class StateManager {
       console.error('Error in fetchServices:', error);
       this.updateState({
         error: error.message,
-        isLoading: false
+        isLoading: false,
+        loadingAction: null,
+        loadingServiceId: null
       });
       return this.state.services; // Return current services on error
     }
@@ -110,7 +126,13 @@ class StateManager {
   // Service-Aktion ausführen (deploy, suspend, resume, delete)
   async performServiceAction(serviceId, action, isAdmin = false) {
     try {
-      this.updateState({ isLoading: true, error: null });
+      // Aktualisiere den Ladezustand mit spezifischen Informationen
+      this.updateState({
+        isLoading: true,
+        loadingAction: action,
+        loadingServiceId: serviceId,
+        error: null
+      });
       const token = localStorage.getItem('token');
 
       if (!token) {
@@ -161,12 +183,16 @@ class StateManager {
         this.updateState({
           services: filteredServices,
           isLoading: false,
+          loadingAction: null,
+          loadingServiceId: null,
           actionSuccess: `Service erfolgreich gelöscht`
         });
       } else {
         this.updateState({
           services: updatedServices,
           isLoading: false,
+          loadingAction: null,
+          loadingServiceId: null,
           actionSuccess: `Aktion ${action} erfolgreich ausgeführt`
         });
       }
@@ -186,7 +212,9 @@ class StateManager {
       console.error(`Error in performServiceAction (${action}):`, error);
       this.updateState({
         error: error.message,
-        isLoading: false
+        isLoading: false,
+        loadingAction: null,
+        loadingServiceId: null
       });
 
       // Bei einem Fehler die Services erneut abrufen

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ServiceList from './ServiceList';
 import BookingList from './BookingList';
+import LoadingOverlay from '../common/LoadingOverlay';
 import stateManager from '../../utils/StateManager';
 
 function Dashboard({ user }) {
@@ -227,45 +228,67 @@ function Dashboard({ user }) {
     }
   };
 
-  if (loading) {
-    return <div className="loading">Loading...</div>;
-  }
+  // Bestimme die Lademeldung basierend auf dem aktuellen Zustand
+  const getLoadingMessage = () => {
+    const state = stateManager.state;
+    if (!state.loadingAction) return 'Wird geladen...';
+
+    switch (state.loadingAction) {
+      case 'fetch':
+        return 'Dienste werden geladen...';
+      case 'deploy':
+        return 'Dienst wird bereitgestellt...';
+      case 'suspend':
+        return 'Dienst wird pausiert...';
+      case 'resume':
+        return 'Dienst wird fortgesetzt...';
+      case 'delete':
+        return 'Dienst wird gelöscht...';
+      default:
+        return 'Wird geladen...';
+    }
+  };
 
   return (
-    <div className="dashboard">
-      <div className="dashboard-header">
-        <div className="dashboard-title">
-          <h1>Willkommen, {user.name}</h1>
-          <p>Verwalten Sie Ihre FE2-Dienste</p>
+    <LoadingOverlay
+      isLoading={loading}
+      message={getLoadingMessage()}
+    >
+      <div className="dashboard">
+        <div className="dashboard-header">
+          <div className="dashboard-title">
+            <h1>Willkommen, {user.name}</h1>
+            <p>Verwalten Sie Ihre FE2-Dienste</p>
+          </div>
+          <button className="refresh-button" onClick={fetchData} title="Dashboard aktualisieren">
+            <span className="refresh-icon">&#x21bb;</span> Aktualisieren
+          </button>
         </div>
-        <button className="refresh-button" onClick={fetchData} title="Dashboard aktualisieren">
-          <span className="refresh-icon">&#x21bb;</span> Aktualisieren
-        </button>
+
+        {error && <div className="error-message">{error}</div>}
+
+        <div className="dashboard-content">
+          <div className="dashboard-section">
+            <h2>Ihre Dienste</h2>
+            <BookingList
+              bookings={bookings}
+              onDeploy={handleDeployService}
+              onSuspend={handleSuspendService}
+              onResume={handleResumeService}
+              onDelete={handleDeleteService}
+            />
+          </div>
+
+          <div className="dashboard-section">
+            <h2>Verfügbare Dienste</h2>
+            <ServiceList
+              services={services}
+              onBook={handleBookService}
+            />
+          </div>
+        </div>
       </div>
-
-      {error && <div className="error-message">{error}</div>}
-
-      <div className="dashboard-content">
-        <div className="dashboard-section">
-          <h2>Ihre Dienste</h2>
-          <BookingList
-            bookings={bookings}
-            onDeploy={handleDeployService}
-            onSuspend={handleSuspendService}
-            onResume={handleResumeService}
-            onDelete={handleDeleteService}
-          />
-        </div>
-
-        <div className="dashboard-section">
-          <h2>Verfügbare Dienste</h2>
-          <ServiceList
-            services={services}
-            onBook={handleBookService}
-          />
-        </div>
-      </div>
-    </div>
+    </LoadingOverlay>
   );
 }
 

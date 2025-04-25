@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ServiceLogs from './ServiceLogs';
+import LoadingOverlay from '../common/LoadingOverlay';
 import stateManager from '../../utils/StateManager';
 import './AdminDashboard.css';
 
@@ -92,21 +93,42 @@ function AdminDashboard() {
     }
   };
 
-  if (loading && services.length === 0) {
-    return <div className="loading">Loading services...</div>;
-  }
+  // Bestimme die Lademeldung basierend auf dem aktuellen Zustand
+  const getLoadingMessage = () => {
+    const state = stateManager.state;
+    if (!state.loadingAction) return 'Wird geladen...';
+
+    switch (state.loadingAction) {
+      case 'fetch':
+        return 'Dienste werden geladen...';
+      case 'deploy':
+        return 'Dienst wird bereitgestellt...';
+      case 'suspend':
+        return 'Dienst wird pausiert...';
+      case 'resume':
+        return 'Dienst wird fortgesetzt...';
+      case 'delete':
+        return 'Dienst wird gelöscht...';
+      default:
+        return 'Wird geladen...';
+    }
+  };
 
   return (
-    <div className="admin-dashboard">
-      <div className="dashboard-header">
-        <h2>Service Dashboard</h2>
-        <button className="refresh-button" onClick={fetchServices}>
-          <span className="refresh-icon">&#x21bb;</span> Aktualisieren
-        </button>
-      </div>
+    <LoadingOverlay
+      isLoading={loading}
+      message={getLoadingMessage()}
+    >
+      <div className="admin-dashboard">
+        <div className="dashboard-header">
+          <h2>Service Dashboard</h2>
+          <button className="refresh-button" onClick={fetchServices}>
+            <span className="refresh-icon">&#x21bb;</span> Aktualisieren
+          </button>
+        </div>
 
-      {error && <div className="error-message">{error}</div>}
-      {actionSuccess && <div className="success-message">{actionSuccess}</div>}
+        {error && <div className="error-message">{error}</div>}
+        {actionSuccess && <div className="success-message">{actionSuccess}</div>}
 
       {showLogs && selectedService ? (
         <ServiceLogs
@@ -323,6 +345,7 @@ function AdminDashboard() {
         </div>
       )}
     </div>
+    </LoadingOverlay>
   );
 }
 
