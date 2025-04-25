@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ServiceList from './ServiceList';
 import BookingList from './BookingList';
+import stateManager from '../../utils/StateManager';
 
 function Dashboard({ user }) {
   const [services, setServices] = useState([]);
@@ -55,16 +56,26 @@ function Dashboard({ user }) {
       return;
     }
 
+    // Abonniere den StateManager für reaktive Updates
+    const unsubscribe = stateManager.subscribe((state) => {
+      if (state.services) {
+        setBookings(state.services);
+        setLoading(state.isLoading);
+        setError(state.error || '');
+      }
+    });
+
+    // Initial Services und Bookings laden
     fetchData();
 
-    // Automatische Aktualisierung alle 10 Sekunden
-    const intervalId = setInterval(() => {
-      console.log('Auto-refreshing dashboard...');
-      fetchData();
-    }, 10000);
+    // Starte Polling für Echtzeit-Updates
+    const stopPolling = stateManager.startPolling(5000, false);
 
     // Aufräumen beim Unmounten der Komponente
-    return () => clearInterval(intervalId);
+    return () => {
+      unsubscribe();
+      stopPolling();
+    };
   }, [user, navigate]);
 
   const handleBookService = async (serviceId, customName, customDomain, licenseInfo) => {

@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ServiceLogs from './ServiceLogs';
 import ServiceDetails from './ServiceDetails';
+import stateManager from '../../utils/StateManager';
 
-function BookingList({ bookings, onDeploy, onSuspend, onResume, onDelete }) {
+function BookingList({ bookings: initialBookings, onDeploy, onSuspend, onResume, onDelete }) {
+  const [bookings, setBookings] = useState(initialBookings);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -11,6 +13,34 @@ function BookingList({ bookings, onDeploy, onSuspend, onResume, onDelete }) {
   const [showLogs, setShowLogs] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState(null);
   const [selectedBooking, setSelectedBooking] = useState(null);
+
+  // Abonniere den StateManager für reaktive Updates
+  useEffect(() => {
+    const unsubscribe = stateManager.subscribe((state) => {
+      setBookings(state.services || initialBookings);
+      setLoading(state.isLoading);
+      setError(state.error || '');
+      if (state.actionSuccess) {
+        setSuccess(state.actionSuccess);
+        // Nach 3 Sekunden die Erfolgsmeldung zurücksetzen
+        setTimeout(() => setSuccess(''), 3000);
+      }
+    });
+
+    // Starte Polling für Echtzeit-Updates
+    const stopPolling = stateManager.startPolling(10000, false);
+
+    // Cleanup beim Unmount
+    return () => {
+      unsubscribe();
+      stopPolling();
+    };
+  }, [initialBookings]);
+
+  // Aktualisiere Bookings, wenn sich initialBookings ändert
+  useEffect(() => {
+    setBookings(initialBookings);
+  }, [initialBookings]);
 
   const handleShowLogs = (bookingId) => {
     setSelectedBookingId(bookingId);
@@ -38,6 +68,18 @@ function BookingList({ bookings, onDeploy, onSuspend, onResume, onDelete }) {
     setCurrentAction(action);
 
     try {
+      // Verwende den StateManager für Service-Aktionen
+      const success = await stateManager.performServiceAction(bookingId, action, false);
+
+      if (success) {
+        // Bei erfolgreichem Löschen, schließe das Detail-Fenster
+        if (action === 'delete' && selectedBooking && selectedBooking.id === bookingId) {
+          handleCloseDetails();
+        }
+        return;
+      }
+
+      // Fallback für die alten Funktionen, falls der StateManager nicht funktioniert
       let result;
       let successMessage;
 
@@ -57,6 +99,10 @@ function BookingList({ bookings, onDeploy, onSuspend, onResume, onDelete }) {
         case 'delete':
           result = await onDelete(bookingId);
           successMessage = 'Dienst erfolgreich gelöscht!';
+          // Bei erfolgreichem Löschen, schließe das Detail-Fenster
+          if (selectedBooking && selectedBooking.id === bookingId) {
+            handleCloseDetails();
+          }
           break;
         default:
           throw new Error('Invalid action');

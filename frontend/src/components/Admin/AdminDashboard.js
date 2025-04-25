@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ServiceLogs from './ServiceLogs';
+import stateManager from '../../utils/StateManager';
 import './AdminDashboard.css';
 
 function AdminDashboard() {
@@ -12,59 +13,33 @@ function AdminDashboard() {
   const [showLogs, setShowLogs] = useState(false);
 
   useEffect(() => {
+    // Abonniere den StateManager für Updates
+    const unsubscribe = stateManager.subscribe((state) => {
+      setServices(state.services || []);
+      setLoading(state.isLoading);
+      setError(state.error || '');
+      if (state.actionSuccess) {
+        setActionSuccess(state.actionSuccess);
+        // Nach 3 Sekunden die Erfolgsmeldung zurücksetzen
+        setTimeout(() => setActionSuccess(''), 3000);
+      }
+    });
+
+    // Initial Services laden
     fetchServices();
 
-    // Auto-refresh every 30 seconds
-    const intervalId = setInterval(fetchServices, 30000);
+    // Starte Polling für Echtzeit-Updates
+    const stopPolling = stateManager.startPolling(10000, true);
 
-    return () => clearInterval(intervalId);
+    // Cleanup beim Unmount
+    return () => {
+      unsubscribe();
+      stopPolling();
+    };
   }, []);
 
   const fetchServices = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-
-      // Check if token exists
-      if (!token) {
-        throw new Error('Nicht authentifiziert. Bitte melden Sie sich erneut an.');
-      }
-
-      try {
-        const response = await fetch('/api/admin/services', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (!response.ok) {
-          if (response.status === 401 || response.status === 403) {
-            throw new Error('Nicht autorisiert. Bitte melden Sie sich erneut an.');
-          }
-          throw new Error('Fehler beim Abrufen der Services');
-        }
-
-        const data = await response.json();
-        setServices(data.services || []);
-        setError('');
-      } catch (fetchError) {
-        // Handle network errors specifically
-        if (fetchError.name === 'TypeError' && fetchError.message.includes('Failed to fetch')) {
-          throw new Error('Netzwerkfehler: Server nicht erreichbar. Bitte überprüfen Sie Ihre Verbindung.');
-        }
-        throw fetchError;
-      }
-    } catch (error) {
-      console.error('Error in fetchServices:', error);
-      setError(error.message);
-      // If services were previously loaded, keep them instead of showing an empty state
-      if (services.length === 0) {
-        // Set mock data for demonstration if needed
-        // setServices(mockServices);
-      }
-    } finally {
-      setLoading(false);
-    }
+    await stateManager.fetchServices(true);
   };
 
   const handleServiceAction = async (serviceId, action) => {
@@ -79,26 +54,17 @@ function AdminDashboard() {
         return;
       }
 
-      const token = localStorage.getItem('token');
+      // Verwende den StateManager für Service-Aktionen
+      const success = await stateManager.performServiceAction(serviceId, action, true);
 
-      const response = await fetch(`/api/admin/services/${serviceId}/${action}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to ${action} service`);
+      if (!success) {
+        throw new Error(`Fehler bei der Aktion ${action}`);
       }
 
-      const data = await response.json();
-      setActionSuccess(`Service ${action} erfolgreich`);
-
-      // Update the service in the list
-      setServices(services.map(service =>
-        service.id === serviceId ? { ...service, status: data.status } : service
-      ));
+      // Bei erfolgreichem Löschen, schließe das Detail-Fenster
+      if (action === 'delete' && success) {
+        closeDetails();
+      }
     } catch (error) {
       setError(error.message);
     } finally {
