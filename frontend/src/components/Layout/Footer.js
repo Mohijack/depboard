@@ -13,9 +13,8 @@ function Footer() {
           <div className="footer-section">
             <h3>Schnellzugriff</h3>
             <ul>
-              <li><a href="/">Deployment</a></li>
+              <li><a href="/">Dashboard</a></li>
               <li><a href="/booking">Dienste bereitstellen</a></li>
-              <li><a href="/dashboard">Dashboard</a></li>
             </ul>
           </div>
 

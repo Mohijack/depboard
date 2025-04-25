@@ -5,7 +5,6 @@ import './styles/bosch-theme.css';
 // Components
 import Navbar from './components/Layout/Navbar';
 import Footer from './components/Layout/Footer';
-import DeploymentLanding from './components/Deployment/DeploymentLanding';
 import Login from './components/Auth/Login';
 import StepLogin from './components/Auth/StepLogin';
 import Register from './components/Auth/Register';
@@ -48,8 +47,8 @@ function App() {
 
         <main className="main-content">
           <Routes>
-            <Route path="/" element={<DeploymentLanding />} />
-            <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login onLogin={handleLogin} />} />
+            <Route path="/" element={user ? <Dashboard user={user} /> : <Navigate to="/login" />} />
+            <Route path="/login" element={user ? <Navigate to="/" /> : <Login onLogin={handleLogin} />} />
             <Route path="/login-step" element={user ? <Navigate to="/booking?step=2" /> : <StepLogin onLogin={handleLogin} />} />
             <Route
               path="/register"
@@ -57,19 +56,19 @@ function App() {
                 user
                   ? <Navigate to={new URLSearchParams(window.location.search).get('redirect') === 'booking'
                       ? '/booking?step=2'
-                      : '/dashboard'}
+                      : '/'}
                     />
                   : <Register />
               }
             />
-            <Route path="/dashboard" element={user ? <Dashboard user={user} /> : <Navigate to="/login" />} />
-            <Route path="/booking" element={<BookingProcess />} />
+            <Route path="/dashboard" element={<Navigate to="/" />} />
+            <Route path="/booking" element={user ? <BookingProcess /> : <Navigate to="/login" />} />
             <Route
               path="/admin/*"
               element={
                 user && user.role === 'admin'
                   ? <AdminPanel user={user} />
-                  : <Navigate to="/dashboard" />
+                  : <Navigate to="/" />
               }
             />
           </Routes>
