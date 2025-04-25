@@ -149,7 +149,18 @@ function BookingList({ bookings, onDeploy, onSuspend, onResume, onDelete }) {
                 {booking.status === 'pending' && 'Ausstehend'}
                 {booking.status === 'deploying' && 'Wird bereitgestellt'}
                 {booking.status === 'suspended' && 'Pausiert'}
-                {booking.status === 'failed' && 'Fehlgeschlagen'}
+                {booking.status === 'failed' && (
+                  <>
+                    Fehlgeschlagen
+                    <span
+                      className="logs-icon"
+                      onClick={() => handleShowLogs(booking.id)}
+                      title="Logs anzeigen"
+                    >
+                      📋
+                    </span>
+                  </>
+                )}
               </span>
             </div>
             <div className="booking-cell">

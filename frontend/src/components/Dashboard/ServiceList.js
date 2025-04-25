@@ -144,21 +144,25 @@ function ServiceList({ services, onBook }) {
         <div className="service-grid">
           {services.map(service => (
             <div key={service.id} className="service-card">
-              <h3>{service.name}</h3>
-              <p className="service-description">{service.description}</p>
-              <div className="service-details">
-                <div className="service-resources">
-                  <div>CPU: {service.resources.cpu}</div>
-                  <div>Memory: {service.resources.memory}</div>
-                  <div>Storage: {service.resources.storage}</div>
-                </div>
+              <div className="service-card-content">
+                <h3>{service.name}</h3>
+                <p className="service-description">{service.description}</p>
               </div>
-              <button
-                className="btn-primary"
-                onClick={() => handleSelectService(service)}
-              >
-                Dienst erstellen
-              </button>
+              <div className="service-card-footer">
+                <div className="service-details">
+                  <div className="service-resources">
+                    <div>CPU: {service.resources.cpu}</div>
+                    <div>Memory: {service.resources.memory}</div>
+                    <div>Storage: {service.resources.storage}</div>
+                  </div>
+                </div>
+                <button
+                  className="btn-primary"
+                  onClick={() => handleSelectService(service)}
+                >
+                  Dienst erstellen
+                </button>
+              </div>
             </div>
           ))}
         </div>

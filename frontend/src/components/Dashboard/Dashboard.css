@@ -49,11 +49,23 @@
   box-shadow: 0 2px 5px var(--shadow);
   transition: transform 0.2s, box-shadow 0.2s;
   border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 280px;
 }
 
 .service-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 5px 15px var(--shadow);
+}
+
+.service-card-content {
+  flex-grow: 1;
+}
+
+.service-card-footer {
+  margin-top: auto;
 }
 
 .service-card h3 {
@@ -233,6 +245,20 @@
 .status-failed {
   background-color: #ffebee;
   color: #c62828;
+}
+
+.logs-icon {
+  margin-left: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.logs-icon:hover {
+  transform: scale(1.2);
 }
 
 .btn-action {
