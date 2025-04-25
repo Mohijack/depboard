@@ -10,7 +10,7 @@ import StepLogin from './components/Auth/StepLogin';
 import Register from './components/Auth/Register';
 import Dashboard from './components/Dashboard/Dashboard';
 import AdminPanel from './components/Admin/AdminPanel';
-import BookingProcess from './components/Booking/BookingProcess';
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -49,20 +49,17 @@ function App() {
           <Routes>
             <Route path="/" element={user ? <Dashboard user={user} /> : <Navigate to="/login" />} />
             <Route path="/login" element={user ? <Navigate to="/" /> : <Login onLogin={handleLogin} />} />
-            <Route path="/login-step" element={user ? <Navigate to="/booking?step=2" /> : <StepLogin onLogin={handleLogin} />} />
+            <Route path="/login-step" element={user ? <Navigate to="/" /> : <StepLogin onLogin={handleLogin} />} />
             <Route
               path="/register"
               element={
                 user
-                  ? <Navigate to={new URLSearchParams(window.location.search).get('redirect') === 'booking'
-                      ? '/booking?step=2'
-                      : '/'}
-                    />
+                  ? <Navigate to="/" />
                   : <Register />
               }
             />
             <Route path="/dashboard" element={<Navigate to="/" />} />
-            <Route path="/booking" element={user ? <BookingProcess /> : <Navigate to="/login" />} />
+
             <Route
               path="/admin/*"
               element={

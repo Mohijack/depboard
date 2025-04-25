@@ -86,7 +86,7 @@ function BookingList({ bookings, onDeploy, onSuspend, onResume, onDelete }) {
   if (bookings.length === 0) {
     return (
       <div className="empty-state">
-        <p>Sie haben noch keine Dienste. Buchen Sie einen Dienst, um zu beginnen!</p>
+        <p>Sie haben noch keine Dienste. Erstellen Sie einen Dienst, um zu beginnen!</p>
       </div>
     );
   }

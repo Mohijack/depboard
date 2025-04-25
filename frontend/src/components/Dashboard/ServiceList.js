@@ -28,7 +28,7 @@ function ServiceList({ services, onBook }) {
 
     try {
       // Prepare license info if needed
-      const licenseInfo = selectedService.id === 'fe2-docker' ? {
+      const licenseInfo = selectedService.id.startsWith('fe2-docker') ? {
         email: licenseEmail,
         password: licensePassword
       } : null;
@@ -39,7 +39,7 @@ function ServiceList({ services, onBook }) {
         throw new Error(result.error);
       }
 
-      setSuccess(`${customName} wurde erfolgreich gebucht!`);
+      setSuccess(`${customName} wurde erfolgreich erstellt!`);
       setSelectedService(null);
       setCustomName('');
       setCustomDomain('');
@@ -59,9 +59,8 @@ function ServiceList({ services, onBook }) {
 
       {selectedService ? (
         <div className="booking-form">
-          <h3>{selectedService.name} buchen</h3>
+          <h3>{selectedService.name} erstellen</h3>
           <p className="service-description">{selectedService.description}</p>
-          <p className="service-price">{selectedService.price} €/Monat</p>
 
           <form onSubmit={handleBookService}>
             <div className="form-group">
@@ -90,7 +89,7 @@ function ServiceList({ services, onBook }) {
             </div>
 
             {/* Lizenzinformationen für FE2 */}
-            {selectedService && selectedService.id === 'fe2-docker' && (
+            {selectedService && selectedService.id.startsWith('fe2-docker') && (
               <>
                 <div className="license-section">
                   <h4>Alamos FE2 Lizenzinformationen</h4>
@@ -136,7 +135,7 @@ function ServiceList({ services, onBook }) {
                 className="btn-primary"
                 disabled={loading}
               >
-                {loading ? 'Wird gebucht...' : 'Jetzt buchen'}
+                {loading ? 'Wird erstellt...' : 'Dienst erstellen'}
               </button>
             </div>
           </form>
@@ -153,13 +152,12 @@ function ServiceList({ services, onBook }) {
                   <div>Memory: {service.resources.memory}</div>
                   <div>Storage: {service.resources.storage}</div>
                 </div>
-                <div className="service-price">{service.price} €/Monat</div>
               </div>
               <button
                 className="btn-primary"
                 onClick={() => handleSelectService(service)}
               >
-                Jetzt buchen
+                Dienst erstellen
               </button>
             </div>
           ))}

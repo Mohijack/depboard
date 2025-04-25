@@ -28,7 +28,6 @@ function Navbar({ user, onLogout }) {
           {user ? (
             <>
               <Link to="/" className="navbar-item">Dashboard</Link>
-              <Link to="/booking" className="navbar-item">Dienste bereitstellen</Link>
               {user.role === 'admin' && (
                 <Link to="/admin" className="navbar-item admin-button">
                   Admin Panel

@@ -14,7 +14,6 @@ function Footer() {
             <h3>Schnellzugriff</h3>
             <ul>
               <li><a href="/">Dashboard</a></li>
-              <li><a href="/booking">Dienste bereitstellen</a></li>
             </ul>
           </div>
 

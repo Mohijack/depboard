@@ -19,15 +19,70 @@ if (!fs.existsSync(SERVICES_FILE)) {
   // Create some default services
   const defaultServices = [
     {
-      id: 'fe2-docker',
-      name: 'FE2 - Feuerwehr Einsatzleitsystem',
-      description: 'Alamos FE2 - Professionelles Einsatzleitsystem für Feuerwehren',
-      price: 19.99,
+      id: 'fe2-docker-standard',
+      name: 'FE2 - Standard',
+      description: 'Alamos FE2 - Professionelles Einsatzleitsystem für Feuerwehren - Standardversion',
+      price: null,
       image: 'alamosgmbh/fe2:latest',
       resources: {
         cpu: 2,
         memory: '2GB',
         storage: '10GB'
+      },
+      composeTemplate: `version: '3'
+services:
+  fe2_database:
+    image: mongo:4.4.29
+    ports:
+      - 27017
+    volumes:
+      - fe2_db_data:/data/db
+    restart: unless-stopped
+
+  fe2_app:
+    image: alamosgmbh/fe2:2.36.100
+    environment:
+      - FE2_EMAIL={{FE2_EMAIL}}
+      - FE2_PASSWORD={{FE2_PASSWORD}}
+      - FE2_ACTIVATION_NAME=fe2_{{UNIQUE_ID}}
+      - FE2_IP_MONGODB=fe2_database
+      - FE2_PORT_MONGODB=27017
+    ports:
+      - 83
+    volumes:
+      - fe2_logs:/Logs
+      - fe2_config:/Config
+    restart: unless-stopped
+    depends_on:
+      - fe2_database
+
+  fe2_nginx:
+    image: nginx:alpine
+    ports:
+      - "{{PORT}}:80"
+    environment:
+      - NGINX_HOST=localhost
+    command: sh -c "echo 'server { listen 80; location / { proxy_pass http://fe2_app:83; } }' > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+    restart: unless-stopped
+    depends_on:
+      - fe2_app
+
+volumes:
+  fe2_db_data:
+  fe2_logs:
+  fe2_config:
+`
+    },
+    {
+      id: 'fe2-docker-premium',
+      name: 'FE2 - Premium',
+      description: 'Alamos FE2 - Professionelles Einsatzleitsystem für Feuerwehren - Premiumversion mit erweiterter Leistung',
+      price: null,
+      image: 'alamosgmbh/fe2:latest',
+      resources: {
+        cpu: 4,
+        memory: '4GB',
+        storage: '20GB'
       },
       composeTemplate: `version: '3'
 services:
@@ -166,7 +221,7 @@ class DockerServiceModel {
     }
 
     // Validate license information for FE2 service
-    if (serviceId === 'fe2-docker') {
+    if (serviceId === 'fe2-docker-standard' || serviceId === 'fe2-docker-premium') {
       if (!licenseInfo.email) {
         return { success: false, message: 'FE2 E-Mail-Adresse ist erforderlich' };
       }
@@ -189,7 +244,7 @@ class DockerServiceModel {
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
       stackId: null, // Will be set when deployed
       dnsRecordId: null, // Will be set when DNS is configured
-      licenseInfo: serviceId === 'fe2-docker' ? {
+      licenseInfo: (serviceId === 'fe2-docker-standard' || serviceId === 'fe2-docker-premium') ? {
         email: licenseInfo.email,
         password: licenseInfo.password
       } : null
@@ -263,7 +318,7 @@ class DockerServiceModel {
       .replace(/{{DOMAIN}}/g, booking.domain);
 
     // Special handling for FE2 service
-    if (booking.serviceId === 'fe2-docker') {
+    if (booking.serviceId === 'fe2-docker-standard' || booking.serviceId === 'fe2-docker-premium') {
       // Generate a unique ID for the FE2 instance
       const uniqueId = booking.id.substring(0, 8);
 
@@ -406,7 +461,7 @@ class DockerServiceModel {
         logger.error(`Failed to create HTML file for booking ${bookingId}:`, error);
       }
 
-      logger.info(`Creating FE2 service for booking ${bookingId} with unique ID ${uniqueId}`);
+      logger.info(`Creating FE2 ${booking.serviceId} service for booking ${bookingId} with unique ID ${uniqueId}`);
     }
 
     return { success: true, composeContent };
