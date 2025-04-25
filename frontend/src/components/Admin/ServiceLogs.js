@@ -70,53 +70,39 @@ function ServiceLogs({ serviceId, serviceName, onClose }) {
       setLoading(true);
       const token = localStorage.getItem('token');
 
-      // In a real application, we would fetch logs from the backend
-      // For this example, we'll use mock data since the API endpoint might not be available
-
-      // Simulate API response
-      let mockData = { logs: [] };
-
       // Check if token exists
       if (!token) {
         throw new Error('Nicht authentifiziert. Bitte melden Sie sich erneut an.');
       }
 
+      // Fetch logs from the API
+      let data = { logs: [] };
       try {
-        // Try to fetch logs from the API, but handle JSON parsing errors gracefully
         const response = await fetch(`/api/admin/logs/service/${serviceId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
 
-        if (response.ok) {
-          // Try to parse the JSON response, but catch any parsing errors
-          try {
-            const responseText = await response.text();
-            if (responseText && responseText.trim()) {
-              mockData = JSON.parse(responseText);
-            }
-          } catch (parseError) {
-            console.error('Error parsing logs JSON:', parseError);
-            // Continue with empty logs array if parsing fails
+        if (!response.ok) {
+          if (response.status === 401 || response.status === 403) {
+            throw new Error('Nicht autorisiert. Bitte melden Sie sich erneut an.');
           }
-        } else if (response.status === 401 || response.status === 403) {
-          console.warn('Authentication error when fetching logs');
-          // Continue with mock data, but log the issue
+          throw new Error('Fehler beim Abrufen der Logs');
         }
-      } catch (fetchError) {
-        // Handle network errors specifically
-        if (fetchError.name === 'TypeError' && fetchError.message.includes('Failed to fetch')) {
-          console.warn('Network error when fetching logs, using mock data instead');
-        } else {
-          console.error('Error fetching logs:', fetchError);
+
+        // Parse the response
+        const responseText = await response.text();
+        if (responseText && responseText.trim()) {
+          data = JSON.parse(responseText);
         }
-        // Continue with mock data if fetch fails
+      } catch (error) {
+        console.error('Error fetching logs:', error);
+        throw error;
       }
 
-      // Get service type (either from API or use a default)
-      let serviceType = 'fe2'; // Default to FE2 for mock data
-
+      // Get service information
+      let serviceInfo;
       try {
         const serviceResponse = await fetch(`/api/admin/services/${serviceId}`, {
           headers: {
@@ -125,107 +111,56 @@ function ServiceLogs({ serviceId, serviceName, onClose }) {
         });
 
         if (serviceResponse.ok) {
-          // Try to parse the JSON response, but catch any parsing errors
-          try {
-            const responseText = await serviceResponse.text();
-            if (responseText && responseText.trim()) {
-              const serviceData = JSON.parse(responseText);
-              serviceType = serviceData.service?.serviceId || 'fe2';
-            }
-          } catch (parseError) {
-            console.error('Error parsing service JSON:', parseError);
-            // Continue with default service type if parsing fails
-          }
-        } else if (serviceResponse.status === 401 || serviceResponse.status === 403) {
-          console.warn('Authentication error when fetching service details');
-          // Continue with default service type, but log the issue
+          const serviceData = await serviceResponse.json();
+          serviceInfo = serviceData.service;
         }
-      } catch (fetchError) {
-        // Handle network errors specifically
-        if (fetchError.name === 'TypeError' && fetchError.message.includes('Failed to fetch')) {
-          console.warn('Network error when fetching service details, using default service type');
-        } else {
-          console.error('Error fetching service details:', fetchError);
-        }
-        // Continue with default service type if fetch fails
+      } catch (error) {
+        console.error('Error fetching service info:', error);
+        // Continue without service info
       }
 
-      // Combine all logs
-      let allLogs = [...(mockData.logs || [])];
+      // Process logs from API
+      const allLogs = [...(data.logs || [])];
 
-      // Add system logs (deployment, portainer, docker compose)
-      const systemLogs = [
-        { timestamp: '2025-04-24T11:01:32.602Z', message: '[direct] Starting deployment for service ' + serviceId },
-        { timestamp: '2025-04-24T11:01:35.123Z', message: '[direct] Creating container for service ' + serviceId },
-        { timestamp: '2025-04-24T11:01:38.456Z', message: '[direct] Container created successfully' },
-        { timestamp: '2025-04-24T11:01:40.789Z', message: '[direct] Starting container' },
-        { timestamp: '2025-04-24T11:01:45.321Z', message: '[direct] Container started successfully' },
-        { timestamp: '2025-04-24T11:01:50.654Z', message: '[portainer] Registering service in Portainer' },
-        { timestamp: '2025-04-24T11:01:55.987Z', message: '[portainer] Service registered successfully' },
-        { timestamp: '2025-04-24T11:02:00.123Z', message: '[docker-compose] Creating network' },
-        { timestamp: '2025-04-24T11:02:05.456Z', message: '[docker-compose] Network created' },
-        { timestamp: '2025-04-24T11:02:10.789Z', message: '[docker-compose] Pulling images' },
-        { timestamp: '2025-04-24T11:02:15.321Z', message: '[docker-compose] Images pulled successfully' },
-        { timestamp: '2025-04-24T11:02:20.654Z', message: '[docker-compose] Starting services' },
-        { timestamp: '2025-04-24T11:02:25.987Z', message: '[docker-compose] Services started successfully' },
-        { timestamp: '2025-04-24T11:02:30.123Z', message: '[direct] Deployment completed successfully' },
-      ];
-
-      // Add service-specific logs based on service type
-      if (serviceType === 'fe2') {
-        // Add FE2-specific logs
-        const fe2Logs = [
-          { timestamp: new Date(Date.now() - 3600000).toISOString(), message: 'FE2 service initialized' },
-          { timestamp: new Date(Date.now() - 3500000).toISOString(), message: 'Loading FE2 configuration...' },
-          { timestamp: new Date(Date.now() - 3400000).toISOString(), message: 'FE2 configuration loaded successfully' },
-          { timestamp: new Date(Date.now() - 3300000).toISOString(), message: 'FE2 license validated' },
-          { timestamp: new Date(Date.now() - 3200000).toISOString(), message: 'Initializing FE2 modules...' },
-          { timestamp: new Date(Date.now() - 3100000).toISOString(), message: 'All FE2 modules initialized' },
-          { timestamp: new Date(Date.now() - 1800000).toISOString(), message: 'FE2 alert system activated' },
-          { timestamp: new Date(Date.now() - 1200000).toISOString(), message: 'FE2 data synchronization completed' },
-          { timestamp: new Date(Date.now() - 600000).toISOString(), message: 'FE2 periodic health check: OK' },
-        ];
-        allLogs = [...allLogs, ...systemLogs, ...fe2Logs];
-      } else {
-        // For other service types, still include system logs
-        allLogs = [...allLogs, ...systemLogs];
-      }
-
-      // Add log level based on content (simplified version)
-      const logsWithLevel = allLogs.map(log => {
+      // Process logs to ensure they have level and source
+      const processedLogs = allLogs.map(log => {
         if (!log || !log.message) {
           return { ...log, level: 'INFO', source: '' };
         }
 
         const content = log.message.toLowerCase();
-        let level = 'INFO';
-        let source = '';
+        let level = log.level || 'INFO';
+        let source = log.source || '';
 
-        // Extract source from system logs
-        if (content.includes('[direct]')) {
-          source = 'direct';
-        } else if (content.includes('[portainer]')) {
-          source = 'portainer';
-        } else if (content.includes('[docker-compose]')) {
-          source = 'docker-compose';
+        // Extract source from system logs if not already set
+        if (!source) {
+          if (content.includes('[direct]')) {
+            source = 'direct';
+          } else if (content.includes('[portainer]')) {
+            source = 'portainer';
+          } else if (content.includes('[docker-compose]')) {
+            source = 'docker-compose';
+          }
         }
 
-        // Determine log level (simplified)
-        if (content.includes('error') || content.includes('exception') || content.includes('fail')) {
-          level = 'ERROR';
-        } else if (content.includes('warn')) {
-          level = 'WARNING';
-        } else if (content.includes('debug')) {
-          level = 'DEBUG';
+        // Determine log level if not already set
+        if (!log.level) {
+          if (content.includes('error') || content.includes('exception') || content.includes('fail')) {
+            level = 'ERROR';
+          } else if (content.includes('warn')) {
+            level = 'WARNING';
+          } else if (content.includes('debug')) {
+            level = 'DEBUG';
+          }
         }
 
         return { ...log, level, source };
       });
 
       // Sort logs by timestamp (newest first)
-      logsWithLevel.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      processedLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-      setLogs(logsWithLevel);
+      setLogs(processedLogs);
       setError('');
     } catch (error) {
       setError('Fehler beim Laden der Logs: ' + error.message);

@@ -121,107 +121,34 @@ function ServiceLogs({ bookingId, onClose }) {
         // Continue without service info
       }
 
-      // Add system logs (deployment, portainer, docker compose)
-      const systemLogs = [
-        { timestamp: new Date(Date.now() - 3600000).toISOString(), level: 'INFO', source: 'direct', message: 'Starting deployment for service' },
-        { timestamp: new Date(Date.now() - 3500000).toISOString(), level: 'INFO', source: 'direct', message: 'Creating container' },
-        { timestamp: new Date(Date.now() - 3400000).toISOString(), level: 'INFO', source: 'direct', message: 'Container created successfully' },
-        { timestamp: new Date(Date.now() - 3300000).toISOString(), level: 'INFO', source: 'direct', message: 'Starting container' },
-        { timestamp: new Date(Date.now() - 3200000).toISOString(), level: 'INFO', source: 'direct', message: 'Container started successfully' },
-        { timestamp: new Date(Date.now() - 3100000).toISOString(), level: 'INFO', source: 'portainer', message: 'Registering service in Portainer' },
-        { timestamp: new Date(Date.now() - 3000000).toISOString(), level: 'INFO', source: 'portainer', message: 'Service registered successfully' },
-        { timestamp: new Date(Date.now() - 2900000).toISOString(), level: 'INFO', source: 'docker-compose', message: 'Creating network' },
-        { timestamp: new Date(Date.now() - 2800000).toISOString(), level: 'INFO', source: 'docker-compose', message: 'Network created' },
-        { timestamp: new Date(Date.now() - 2700000).toISOString(), level: 'INFO', source: 'docker-compose', message: 'Pulling images' },
-        { timestamp: new Date(Date.now() - 2600000).toISOString(), level: 'INFO', source: 'docker-compose', message: 'Images pulled successfully' },
-        { timestamp: new Date(Date.now() - 2500000).toISOString(), level: 'INFO', source: 'docker-compose', message: 'Starting services' },
-        { timestamp: new Date(Date.now() - 2400000).toISOString(), level: 'INFO', source: 'docker-compose', message: 'Services started successfully' },
-        { timestamp: new Date(Date.now() - 2300000).toISOString(), level: 'INFO', source: 'direct', message: 'Deployment completed successfully' },
-      ];
+      // Process logs from API
+      const allLogs = [...(data.logs || [])];
 
-      // Add Docker deployment error logs if service status is 'failed'
-      if (serviceInfo && serviceInfo.status === 'failed') {
-        systemLogs.push(
-          { timestamp: new Date(Date.now() - 1800000).toISOString(), level: 'ERROR', source: 'docker-compose', message: 'Error creating container: port is already allocated' },
-          { timestamp: new Date(Date.now() - 1700000).toISOString(), level: 'ERROR', source: 'direct', message: 'Deployment failed: could not start container' },
-          { timestamp: new Date(Date.now() - 1600000).toISOString(), level: 'ERROR', source: 'portainer', message: 'Failed to register service in Portainer' }
-        );
-      }
+      // Process logs to ensure they have level and source
+      const processedLogs = allLogs.map(log => {
+        if (!log.level) {
+          // Determine log level based on content
+          const content = log.message ? log.message.toLowerCase() : '';
+          let level = 'INFO';
 
-      // Add service-specific logs based on service type
-      let serviceType = serviceInfo ? serviceInfo.serviceId : 'fe2-docker-standard';
-      if (serviceType.startsWith('fe2')) {
-        // Add FE2-specific logs
-        const fe2Logs = [
-          { timestamp: new Date(Date.now() - 2200000).toISOString(), level: 'INFO', message: 'FE2 service initialized' },
-          { timestamp: new Date(Date.now() - 2100000).toISOString(), level: 'INFO', message: 'Loading FE2 configuration...' },
-          { timestamp: new Date(Date.now() - 2000000).toISOString(), level: 'INFO', message: 'FE2 configuration loaded successfully' },
-          { timestamp: new Date(Date.now() - 1900000).toISOString(), level: 'INFO', message: 'FE2 license validated' },
-          { timestamp: new Date(Date.now() - 1500000).toISOString(), level: 'INFO', message: 'Initializing FE2 modules...' },
-          { timestamp: new Date(Date.now() - 1400000).toISOString(), level: 'INFO', message: 'All FE2 modules initialized' },
-          { timestamp: new Date(Date.now() - 1300000).toISOString(), level: 'INFO', message: 'FE2 alert system activated' },
-          { timestamp: new Date(Date.now() - 1200000).toISOString(), level: 'INFO', message: 'FE2 data synchronization completed' },
-          { timestamp: new Date(Date.now() - 600000).toISOString(), level: 'INFO', message: 'FE2 periodic health check: OK' },
-        ];
-
-        // Add existing logs from API
-        const allLogs = [...(data.logs || []), ...systemLogs, ...fe2Logs];
-
-        // Process logs to ensure they have level and source
-        const processedLogs = allLogs.map(log => {
-          if (!log.level) {
-            // Determine log level based on content
-            const content = log.message ? log.message.toLowerCase() : '';
-            let level = 'INFO';
-
-            if (content.includes('error') || content.includes('exception') || content.includes('fail')) {
-              level = 'ERROR';
-            } else if (content.includes('warn')) {
-              level = 'WARNING';
-            } else if (content.includes('debug')) {
-              level = 'DEBUG';
-            }
-
-            log.level = level;
+          if (content.includes('error') || content.includes('exception') || content.includes('fail')) {
+            level = 'ERROR';
+          } else if (content.includes('warn')) {
+            level = 'WARNING';
+          } else if (content.includes('debug')) {
+            level = 'DEBUG';
           }
 
-          return log;
-        });
+          log.level = level;
+        }
 
-        // Sort logs by timestamp (newest first)
-        processedLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        return log;
+      });
 
-        setLogs(processedLogs);
-      } else {
-        // For other service types
-        const allLogs = [...(data.logs || []), ...systemLogs];
+      // Sort logs by timestamp (newest first)
+      processedLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-        // Process logs to ensure they have level and source
-        const processedLogs = allLogs.map(log => {
-          if (!log.level) {
-            // Determine log level based on content
-            const content = log.message ? log.message.toLowerCase() : '';
-            let level = 'INFO';
-
-            if (content.includes('error') || content.includes('exception') || content.includes('fail')) {
-              level = 'ERROR';
-            } else if (content.includes('warn')) {
-              level = 'WARNING';
-            } else if (content.includes('debug')) {
-              level = 'DEBUG';
-            }
-
-            log.level = level;
-          }
-
-          return log;
-        });
-
-        // Sort logs by timestamp (newest first)
-        processedLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-        setLogs(processedLogs);
-      }
+      setLogs(processedLogs);
 
       setError('');
     } catch (error) {
